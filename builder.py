@@ -17,10 +17,10 @@ def is_newer(f1: str, f2: str) -> bool:
     # print("%s modified @ %f" % (f2, m2))
     return m1 > m2
 
-def run(args):
+def run(args, pwd='.'):
     print(args)
     if not DRY_RUN:
-        res = subprocess.run(args)
+        res = subprocess.run(args, cwd=pwd)
         if res.returncode != 0:
             print("process exited with code %d\n" % res.returncode)
             sys.exit(1)
@@ -167,6 +167,9 @@ class ElfRule(Target):
                 linkpaths.append(libdir)
 
             m = re.fullmatch(r'lib(\w+)\.a', os.path.basename(lib))
+            if m is None:
+                # try matching for a shared library
+                m = re.fullmatch(r'lib(\w+)\.so', os.path.basename(lib))
             if m is None:
                 print('%s is not a properly named library' % lib)
                 sys.exit(1)
