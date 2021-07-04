@@ -32,7 +32,7 @@ class Rule:
     def can_build(self, file: str) -> bool:
         return False
 
-    def get_prereqs(self, file: str) -> list[str]:
+    def get_prereqs(self, file: str) -> list:
         return []
 
     def build(self, file: str):
@@ -40,7 +40,7 @@ class Rule:
 
 # explicit target
 class Target(Rule):
-    def __init__(self, file: str, prerequisites: list[str], mk_args, phony: bool=False):
+    def __init__(self, file: str, prerequisites: list, mk_args, phony: bool=False):
         super().__init__(phony)
         self.file = file
         self.prereqs = prerequisites
@@ -49,7 +49,7 @@ class Target(Rule):
     def can_build(self, file: str) -> bool:
         return file == self.file
 
-    def get_prereqs(self, file: str) -> list[str]:
+    def get_prereqs(self, file: str) -> list:
         return self.prereqs
 
     def build(self, file: str):
@@ -92,7 +92,7 @@ def build(rules, rule, file):
 # build a cpp file into an object file
 class CppRule(Rule):
     def __init__(self, build_dir: str, compiler: str, 
-            options: list[str], src_ext: str='.cpp', out_ext: str='.o'):
+            options: list, src_ext: str='.cpp', out_ext: str='.o'):
         super().__init__(False)
         self.build_dir = build_dir
         self.compiler = compiler
@@ -104,7 +104,7 @@ class CppRule(Rule):
         return file.startswith(self.build_dir) \
             and file.endswith(self.src_ext + self.out_ext)
 
-    def get_prereqs(self, file: str) -> list[str]:
+    def get_prereqs(self, file: str) -> list:
         depfile = os.path.splitext(file)[0] + '.d'
 
         path = pathlib.Path(file)
@@ -149,7 +149,7 @@ class CppRule(Rule):
 
 # build an ELF file from several object/archive files
 class ElfRule(Target):
-    def __init__(self, file: str, objs: list[str], libs: list[str], compiler: str, options: list[str]):
+    def __init__(self, file: str, objs: list, libs: list, compiler: str, options: list):
         super().__init__(file, objs + libs, None)
         self.objs = objs
         self.libs = libs
@@ -181,7 +181,7 @@ class ElfRule(Target):
 
 # build a static library archive from several object files
 class LibRule(Target):
-    def __init__(self, file: str, objs: list[str], archiver: str):
+    def __init__(self, file: str, objs: list, archiver: str):
         super().__init__(file, objs, None)
         self.archiver = archiver
 
