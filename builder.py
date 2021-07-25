@@ -5,6 +5,7 @@ import re
 import pathlib
 
 DRY_RUN = 0
+VERSION = '1.1.0'
 
 def exists(f: str) -> bool:
     return os.path.exists(f)
@@ -40,11 +41,11 @@ class Rule:
 
 # explicit target
 class Target(Rule):
-    def __init__(self, file: str, prerequisites: list, mk_args, phony: bool=False):
+    def __init__(self, file: str, prerequisites: list, build_func, phony: bool=False):
         super().__init__(phony)
         self.file = file
         self.prereqs = prerequisites
-        self.mk_args = mk_args
+        self.build_func = build_func
 
     def can_build(self, file: str) -> bool:
         return file == self.file
@@ -53,10 +54,8 @@ class Target(Rule):
         return self.prereqs
 
     def build(self, file: str):
-        if self.mk_args is None: return
-        args = self.mk_args(file, self.prereqs)
-        if len(args) > 0:
-            run(args)
+        if self.build_func == None: return
+        self.build_func(file, self.prereqs)
 
 def build(rules, rule, file):
     print("build %s with %s" % (file, rule))
